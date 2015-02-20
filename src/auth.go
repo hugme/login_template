@@ -24,7 +24,7 @@ type User struct {
 }
 
 func SetupDB() *sql.DB {
-        db, err := sql.Open("postgres", "user=jallman password=abc dbname=webstruct_user host=localhost sslmode=disable")
+        db, err := sql.Open("postgres", "user=dbuser password=abc dbname=webstruct_user host=localhost sslmode=disable")
         PanicIf(err)
         return db
 }
