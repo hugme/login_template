@@ -1,0 +1,98 @@
+create database webstruct_user;
+
+-- This is for settin gup the users
+
+CREATE TABLE users(
+ uid serial,
+ locked boolean,
+ username varchar(32) UNIQUE NOT NULL,
+ pass varchar(128) NOT NULL,
+ email varchar(128) NOT NULL,
+ gid int,
+ description varchar(1024)
+);
+
+CREATE TABLE groups(
+ gid serial,
+ name varchar(128) NOT NULL,
+ locked boolean,
+ description varchar(1024)
+);
+
+CREATE TABLE groupuser(
+ uid int NOT NULL,
+ gid int NOT NULL,
+ lock boolean
+);
+
+CREATE TABLE groupinc(
+ gid int,
+ gid_inc int
+);
+
+CREATE TABLE groupauth(
+ gid int,
+ locked boolean,
+ scr_all boolean,
+ obj_all boolean,
+ dirid int,
+ scrid int,
+ objid int
+);
+
+-- These are for setting up the permissions
+
+CREATE TABLE dir(
+ dirid serial,
+ name varchar(128) UNIQUE NOT NULL,
+ menuname varchar(128) NOT NULL,
+ shorder int,
+ visable boolean,
+ locked boolean,
+ description varchar(1024)
+);
+
+CREATE TABLE script(
+ scrid serial,
+ dirid int,
+ name varchar(128) UNIQUE NOT NULL,
+ menuname varchar(128),
+ run varchar(128) NOT NULL,
+ shorder int,
+ visable boolean,
+ locked boolean,
+ description varchar(1024)
+);
+
+CREATE TABLE object(
+ objid serial,
+ scrid int,
+ name varchar(128) UNIQUE NOT NULL,
+ locked boolean,
+ description varchar(1024)
+);
+
+--Create the admin pages
+insert into dir (dirid, name, menuname, shorder, locked) values ('1', 'admin', 'Admin', '100', TRUE);
+insert into dir (dirid, name, menuname, shorder, locked) values ('2', 'profile', 'Profile', '1', TRUE);
+insert into script (scrid, dirid, name, menuname, run, shorder, locked) values ('1','1','user','User','adminUser','10', TRUE);
+insert into script (scrid, dirid, name, menuname, run, shorder, locked) values ('2','1','user groups','Groups','adminGroups','15', TRUE);
+insert into script (scrid, dirid, name, menuname, run, shorder, locked) values ('3','1','user perms','Permissions','adminPerms','20', TRUE);
+insert into script (scrid, dirid, name, menuname, run, shorder, locked) values ('4','1','pages','Pages','adminPages','25', TRUE);
+insert into script (scrid, dirid, name, menuname, run, shorder, locked) values ('5','2','login','Login','adminLogin','10', TRUE);
+insert into script (scrid, dirid, name, menuname, run, shorder, locked) values ('6','2','profile','Profile','adminProfile','15', TRUE);
+
+--Create the admin user and group, bind them, then give them permissions to the world
+insert into users (uid,locked,username,pass,email) values ('0',TRUE,'admin','$2a$10$1GH2pU72JagQ6e9n1/tc2OqKcYiBahiV.flwAvFkuSzISTINT2LKC','admin@localhost');
+insert into groups (gid,name,locked) values ('0','admin',TRUE);
+insert into groups (gid,name,locked) values ('1','guest',TRUE);
+insert into groups (gid,name,locked) values ('2','user',TRUE);
+insert into groups (gid,name,locked) values ('3','developer',TRUE);
+insert into groupinc (gid,gid_inc) values ('3','2');
+insert into groupuser (uid,gid) values ('0','0');
+insert into groupauth (gid,locked,scr_all,obj_all,dirid) values ('0',TRUE,TRUE,TRUE,'1');
+insert into groupauth (gid,locked,scr_all,obj_all,dirid) values ('0',TRUE,TRUE,TRUE,'2');
+insert into groupauth (gid,scr_all,obj_all,dirid) values ('3',TRUE,TRUE,'1');
+insert into groupauth (gid,scr_all,obj_all,dirid) values ('1',TRUE,TRUE,'2');
+insert into groupauth (gid,scr_all,obj_all,dirid) values ('2',TRUE,TRUE,'2');
+insert into groupauth (gid,scr_all,obj_all,dirid) values ('3',TRUE,TRUE,'2');

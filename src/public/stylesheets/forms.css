@@ -1,0 +1,17 @@
+\* ###################################
+## Let's make our forms look pretty ##
+\* ###################################
+
+\* ###########################
+## This is a nice login box ##
+\* ###########################
+
+div.floatbox {
+ border: 1px solid #ccc;
+ -moz-border-radius: 5px;
+ -webkit-border-radius: 5px;
+ border-radius: 5px;
+ -webkit-background-clip: padding-box;
+ background: white;
+ margin-bottom: 30px;
+}

@@ -1,0 +1,47 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+
+ <head>
+  <link rel="stylesheet" type="text/css" href="/stylesheets/main.css" />
+  <link rel="stylesheet" type="text/css" href="/stylesheets/forms.css" />
+  <link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon">
+  <link rel="icon" href="/images/favicon.ico" type="image/x-icon">
+  <title>NAC UI</title>
+ </head>
+
+ <body>
+  <!-- Top Title bar -->
+  <div class=top>
+   <div class=topinner>
+    <h3 class=top>&nbsp; &nbsp;Nagios Alerting Configurator</h3>
+    <ul class=top>
+     <li class=top><a href="/logout" class=top>logout</a></li>
+     <li class=top><a href="/" class=top>home</a></li>
+    </ul>
+   </div>
+  </div>
+  <!-- Left Bar Body -->
+  <div class=center>
+   <div class=menu><img src="/images/top.gif"><p class=menu></p>
+    <p class=menu>
+        {{ range .ASlice }}
+          {{ if .ItemScript }}
+            &nbsp&nbsp&nbsp{{.ItemName }}--{{ .ItemScript }}<br>
+          {{ else }}
+            foo {{ .ItemName }}<br>
+          {{ end }}
+        {{ end }}
+     </p>
+    <img src="/images/bottom.jpg">
+   </div>
+  <div class=content>
+  <!-- Content Body -->
+        Start Test<Br><br>
+        {{ range .BSlice }}
+          &nbsp&nbsp&nbsp{{ .Body }}<br>
+        {{ end }}
+        <Br><br>End Test
+  </div>
+ </body>
+
+</html>
