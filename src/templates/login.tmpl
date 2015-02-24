@@ -1,6 +1,5 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
-
  <head>
   <link rel="stylesheet" type="text/css" href="/stylesheets/main.css" />
   <link rel="stylesheet" type="text/css" href="/stylesheets/forms.css" />
@@ -8,7 +7,6 @@
   <link rel="icon" href="/images/favicon.ico" type="image/x-icon">
   <title>NAC UI</title>
  </head>
-
  <body>
   <!-- Top Title bar -->
   <div class=top>
@@ -19,16 +17,19 @@
     </ul>
    </div>
   </div>
+
   <!-- Main Body -->
+
    <div class=center>
-   <div class=menu><img src="/images/top.gif"><p class=menu></p>
-    <img src="/images/bottom.jpg">
+   <div class=menu><img src="/images/nac-top.gif"><p class=menu></p>
+    <img src="/images/nac-bottom.jpg">
    </div>
   <div class=content>
-        <!-- ADD ERROR MESSAGES HERE -->
+
+	<!-- ADD ERROR MESSAGES HERE -->
    <div class=center>
     <h2>
-        <p id=error>{{ . }}</p>
+	<p id=error>{{ . }}</p>
      Nagios Administrative Console.<br/>
      Please login using your LDAP credentials.
     </h2>
@@ -38,12 +39,11 @@
       <input type=PASSWORD NAME=PASSWD size=14 placeholder="Password"><br>
       <br>
       <input type="submit" value="Log In">
-        <br><br>
+	<br><br>
       <a href="/signup">Create a new account</a>
      </p>
     </form>
    </div>
   </div>
  </body>
-
-</html>
+</html> 

@@ -1,6 +1,5 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
-
  <head>
   <link rel="stylesheet" type="text/css" href="/stylesheets/main.css" />
   <link rel="stylesheet" type="text/css" href="/stylesheets/forms.css" />
@@ -8,7 +7,6 @@
   <link rel="icon" href="/images/favicon.ico" type="image/x-icon">
   <title>NAC UI</title>
  </head>
-
  <body>
   <!-- Top Title bar -->
   <div class=top>
@@ -20,28 +18,20 @@
     </ul>
    </div>
   </div>
+
   <!-- Left Bar Body -->
   <div class=center>
-   <div class=menu><img src="/images/top.gif"><p class=menu></p>
-    <p class=menu>
-        {{ range .ASlice }}
-          {{ if .ItemScript }}
-            &nbsp&nbsp&nbsp{{.ItemName }}--{{ .ItemScript }}<br>
-          {{ else }}
-            foo {{ .ItemName }}<br>
-          {{ end }}
-        {{ end }}
-     </p>
-    <img src="/images/bottom.jpg">
+   <div class=menu><img src="/images/nac-top.gif">
+	{{ range .ASlice }} {{ if .ItemScript }} <form method=POST action=/><input type="hidden" name="SRC" value="{{.ItemScript}}"><input class=menu type="submit" name="SUBMIT" value="{{.ItemName }}"></form>
+	{{ else }} &nbsp;&nbsp;&nbsp; {{ .ItemName }}
+	{{ end }} {{ end }}
+    <img src="/images/nac-bottom.jpg">
    </div>
   <div class=content>
+
   <!-- Content Body -->
-        Start Test<Br><br>
-        {{ range .BSlice }}
-          &nbsp&nbsp&nbsp{{ .Body }}<br>
-        {{ end }}
-        <Br><br>End Test
+	{{ template "index.html" .BSlice }}
+	
   </div>
  </body>
-
-</html>
+</html> 

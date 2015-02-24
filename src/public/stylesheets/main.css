@@ -1,6 +1,5 @@
 body { background-color:#fff;
         color:#000; }
-
 div.center { margin-left:auto;
         margin-right:auto;
         width:1200px;
@@ -13,6 +12,8 @@ div.center { margin-left:auto;
 /* ####################################
 ## Here we have the top of the page  ##
 #################################### */
+
+
 div.top { width:100%;
         background-color:#000000;
         height:50px;
@@ -20,7 +21,6 @@ div.top { width:100%;
         left:0px;
         z-index:100;
         text-align:center; }
-
 div.topinner { margin-left:auto;
         background-color:#333333;
         width:1200px;
@@ -31,13 +31,11 @@ div.topinner { margin-left:auto;
         padding:0;
         text-transform:uppercase;
         overflow:hidden; }
-
 h3.top { padding:0;
         float:left;
         font-size:1em;
-        color:#00BAE1;
+        color:#8BF;
         text-transform:uppercase; }
-
 ul.top { list-style-type:none;
         float:right;
         margin-left:auto;
@@ -45,51 +43,73 @@ ul.top { list-style-type:none;
         padding:0;
         overflow:hidden;
         width:500px; }
-
 li.top { float:right; }
-
 a.top { display:block;
-        height:24px;
-        text-decoration:none;
-        width:80px;
-        font-size:.8em;
-        color:white; }
+	height:24px;
+	text-decoration:none;
+	width:80px;
+	font-size:.8em;
+	color:white; }
 
-/* #############################################
-## This is all for the left side of the page  ##
-############################################# */
+
+
+
+/* ##################################################
+## This is all for the left side menu on the page  ##
+##################################################### */
+
 div.menu { width:200px;
-        padding:0px;
-        position:relative;
-        left:0px;
-        top:5px;
-        background-color:#FFF;
-        background-image: url('/images/nac-background.jpg');
-        color:black; }
-
+	font-size:.8em;
+	padding:0px;
+	position:relative;
+	left:0px;
+	top:5px;
+	background-color:#FFF;
+	background-image: url('/images/nac-background.jpg');
+	color:white; }
 p.menu { font-size:.7em;
-        right:8px;
-        width:199px;
-        padding:10px;
-        background-color:#black;
-        color:white;
-        opacity:1;
-        }
+	right:8px;
+	width:199px;
+	padding:10px;
+	background-color:#black;
+	color:white;
+	opacity:1;
+	}
+a.menu { font-size:1em;
+        color:#8BF;
+	text-decoration:none; }
+input.menu {
+        width:1200px;
+        position:relative;
+	border: none;
+	align: left;
+	font-size:1.0em;
+	background: none;
+	color: #8BF;
+	text-decoration: none;
+	cursor: pointer;
+	display: inline;
+	margin: 0;
+	width:100px;
+	padding: 0; }
+
 
 /* ######################################
 ## These are for the body of the page  ##
 ###################################### */
-div.content { font-size:.9em;
-        width:800px;
-        position:absolute;
-        top:0px;
-        left:230px;
-        padding:8px; }
 
+div.content { font-size:.9em;
+	width:800px;
+	position:absolute;
+	top:0px;
+	left:230px;
+	padding:8px; }
 dir.tiny { font-size:.7em;
         font-family:"Times New Roman", Times, serif; }
-
 #error { color:red;
         font-family:Georgia, serif;
         font-size:1.3em;
         text-align:center; }
+
+
+

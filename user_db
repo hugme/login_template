@@ -5,6 +5,8 @@ create database webstruct_user;
 CREATE TABLE users(
  uid serial,
  locked boolean,
+ firstname varchar(64) NOT NULL,
+ lastname varchar(64) NOT NULL,
  username varchar(32) UNIQUE NOT NULL,
  pass varchar(128) NOT NULL,
  email varchar(128) NOT NULL,
@@ -96,3 +98,5 @@ insert into groupauth (gid,scr_all,obj_all,dirid) values ('3',TRUE,TRUE,'1');
 insert into groupauth (gid,scr_all,obj_all,dirid) values ('1',TRUE,TRUE,'2');
 insert into groupauth (gid,scr_all,obj_all,dirid) values ('2',TRUE,TRUE,'2');
 insert into groupauth (gid,scr_all,obj_all,dirid) values ('3',TRUE,TRUE,'2');
+
+
