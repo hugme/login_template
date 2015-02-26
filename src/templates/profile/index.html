@@ -1,10 +1,15 @@
 Welcome {{ .FirstName }} {{ .LastName }}
 <br><br>
-Here is your profile information
+Please check your profile to make sure it is correct
 <br><br>
-Begin the test<br> <br>
- {{ .Email }}<br><br>
- {{ .Username }}
-<br><br><br>
-End the test <br>
-
+<FORM METHOD=POST ACTION="/">
+	Name:
+	<input type=TEXT NAME=FIRST_NAME value="{{ .FirstName }}">
+	<input type=TEXT NAME=LAST_NAME value="{{ .LastName }}">
+	<br>
+	Email:
+	<input type=TEXT NAME=EMAIL value="{{ .Email }}">
+	<br>
+	<INPUT TYPE=HIDDEN NAME="SCR" VALUE="{{ .Scr }}">
+	<INPUT TYPE="SUBMIT" NAME="SUBMIT" VALUE="Submit">
+</FORM>

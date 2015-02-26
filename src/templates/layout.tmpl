@@ -22,15 +22,21 @@
   <!-- Left Bar Body -->
   <div class=center>
    <div class=menu><img src="/images/nac-top.gif">
-	{{ range .ASlice }} {{ if .ItemScript }} <form method=POST action=/><input type="hidden" name="SRC" value="{{.ItemScript}}"><input class=menu type="submit" name="SUBMIT" value="{{.ItemName }}"></form>
+	{{ range .Menu }} {{ if .ItemScript }} <form method=POST action=/><input type="hidden" name="SCR" value="{{.ItemScript}}"><input class=menu type="submit" name="SUBMIT" value="{{.ItemName }}"></form>
 	{{ else }} &nbsp;&nbsp;&nbsp; {{ .ItemName }}
 	{{ end }} {{ end }}
     <img src="/images/nac-bottom.jpg">
    </div>
   <div class=content>
 
+  <!-- Any Errors -->
+	{{ range .Error }}{{ if . }}{{ . }}<br>{{ end }} {{ end }}
   <!-- Content Body -->
-	{{ template "index.html" .BSlice }}
+	{{ template "index.html" .Body }}
+
+	<br>==test<br>
+	{{ .Page }}
+	<br>==test<br>
 	
   </div>
  </body>

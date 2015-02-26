@@ -9,7 +9,7 @@ import (
 	//"io/ioutil"
 	//"os"
 	"code.google.com/p/go.crypto/bcrypt"
-	//"strconv"
+	"strconv"
 	_ "github.com/lib/pq"
 )
 
@@ -50,15 +50,15 @@ func main() {
 	 http.Redirect(rw, r, "/login", http.StatusFound)
 	})
 
+	m.Get("/login", PostLogin)
+	m.Post("/login", PostLogin)
+	m.Post("/signup", Signup)
+
 	m.Get("/", RequireLogin, PageLayout)
 	m.Post("/", RequireLogin, PageLayout)
 	m.Get("/go", RequireLogin, PageLayout)
 	m.Post("/go", RequireLogin, PageLayout)
-	m.Get("/login", PostLogin)
-	m.Post("/login", PostLogin)
 
-	// Signup needs to be moved into "/" as a script
-	m.Post("/signup", Signup)
 
 	m.Run()
 }
@@ -141,18 +141,30 @@ func PageLayout(w http.ResponseWriter, r *http.Request, s sessions.Session, db *
 	//PageContent(id, db, rw, req)
 
 	//grab the script and build the content
-	src := req.FormValue("SRC")
-	if src == "" { src="home" }
-	// contentPage := TEMPLATEDIR + "/" + src + "/index.html"
-	switch src {
-	  case "profile": PageProfile(id, db, rw, req, w)
+	scr := req.FormValue("SCR")
+	if scr == "" { scr="home" }
+
+	switch scr {
+	  case "profile":
+	    wholePage := PageProfile(scr, id, db, rw, req, w)
+	    wholePage.Menu = menuPage
+            t, _ := template.ParseFiles(LAYOUTPAGE, wholePage.Content)
+            t.Execute(w,wholePage)
 	  default:
-	  contentPage := TEMPLATEDIR + "/home/index.html"
-	  t, _ := template.ParseFiles(LAYOUTPAGE, contentPage)
-	  t.Execute(w,struct{ ASlice []Menu
-	     BSlice []AuthPage } { ASlice: menuPage, BSlice: bodyPage, })
+	    wholePage := *PageHome()
+	    wholePage.Menu = menuPage
+            t, _ := template.ParseFiles(LAYOUTPAGE, wholePage.Content)
+            t.Execute(w,wholePage)
 	}
+
 }
+
+//func PublishPage(st int) {
+//	   wholePage.Menu = menuPage
+//          t, _ := template.ParseFiles(LAYOUTPAGE, wholePage.Content)
+//         t.Execute(w,wholePage)
+//}
+
 
 
 func PageMenu(id int, db *sql.DB, rw http.ResponseWriter, req *http.Request) {
@@ -225,26 +237,137 @@ func PageMenu(id int, db *sql.DB, rw http.ResponseWriter, req *http.Request) {
 	return
 }
 
+/*
+##################################################
+### Here are some functions to check user input ##
+##################################################
+*/
 
+/*
+TESTING FROM HERE
 
-func PageProfile(id int, db *sql.DB, rw http.ResponseWriter, req *http.Request, w http.ResponseWriter) {
-	type ProfilePage struct {
-	  FirstName string
-	  LastName string
-	  Username string
-	  Email string
-	  Password string
+type InputCheckData struct {
+	Data string
+	Name string
+	Min int
+	Max int
+}
+
+func (ic *InputCheckData) InputCheck() *string {
+	var error string
+	if len(ic.Data) > ic.Max {
+	 error = "Your " + ic.Name + " is too long"
 	}
-	var profilePage ProfilePage
+	if len(ic.Data) < ic.Min {
+	 error = "Your " + ic.Name + " is too short"
+	}
+	return &error
+}
+*/
+
+
+type InputCheckData struct {
+	Data string
+	Name string
+	Min int
+	Max int
+	Error *[]string
+}
+func (ic *InputCheckData) InputCheck() {
+	var error string
+	if len(ic.Data) > ic.Max {
+	 error = "Your " + ic.Name + " is too long"
+	}
+	if len(ic.Data) < ic.Min {
+	 error = "Your " + ic.Name + " is too short"
+	}
+	  *ic.Error = append(*ic.Error, error)
+	return
+}
+
+
+
+/*
+##################################
+### We are building pages here ###
+##################################
+*/
+
+//##################### Home
+
+type HomePage struct {
+	Menu []Menu
+	Body string
+	Content string
+	Error []string
+	Page string
+}
+
+func PageHome() *HomePage {
+	homePage := new(HomePage)
+	homePage.Body = "This is just a home page"
+	homePage.Content = TEMPLATEDIR + "/home/index.html"
+	homePage.Page = "index.html"
+        return homePage
+}
+
+
+//##################### Profile
+
+type ProfilePage struct {
+	Scr string
+	FirstName string
+	LastName string
+	Username string
+	Email string
+	Password string
+}
+
+type LoginPage struct {
+	Menu []Menu
+	Body ProfilePage
+	Content string
+	Error []string
+}
+
+func PageProfile(scr string, id int, db *sql.DB, rw http.ResponseWriter, r *http.Request, w http.ResponseWriter) *LoginPage {
+	profilePage := new(ProfilePage)
+	userData := new(ProfilePage)
+	loginPage := new(LoginPage)
+	profilePage.Scr = scr
+
 	err := db.QueryRow("select firstname,lastname,username,email from users where uid=$1;", id).Scan(&profilePage.FirstName,&profilePage.LastName,&profilePage.Username,&profilePage.Email)
 	PanicIf(err)
-	//profilePage = ProfilePage{FirstName: "first name"}
-        contentPage := TEMPLATEDIR + "/profile/index.html"
-        t, _ := template.ParseFiles(LAYOUTPAGE, contentPage)
-         t.Execute(w,struct{
-	    ASlice []Menu
-            BSlice ProfilePage } {
-	    ASlice: menuPage,
-	    BSlice: profilePage, })
-        return
+	
+	dataReq := r.FormValue("SUBMIT")
+	if dataReq == "Submit" {
+	  userData.FirstName,userData.LastName,userData.Email = r.FormValue("FIRST_NAME"),r.FormValue("LAST_NAME"),r.FormValue("EMAIL")
+	  // checkFirstName := InputCheckData{userData.FirstName, "First Name", 2, 32, &loginPage.Error}
+	  InputCheckData{userData.FirstName, "First Name", 2, 32, &loginPage.Error}
+
+	  //if *checkFirstName.InputCheck() != "" {
+	  //loginPage.Error = append(loginPage.Error, *checkFirstName.InputCheck())
+	  //}
+
+
+	  //checkLastName := &InputCheckData{userData.LastName, "Last Name", 2, 32}
+	  //loginPage.Error = append(loginPage.Error, *checkLastName.InputCheck())
+	  //checkEmail := InputCheckData{userData.Email, "Email Address", 8, 64}
+	  //loginPage.Error = append(loginPage.Error, *checkEmail.InputCheck())
+	  
+	    loginPage.Error = append(loginPage.Error, strconv.Itoa(len(loginPage.Error)))
+	  if len(loginPage.Error) == 0 {
+	    smt, err := db.Prepare("update users set firsname=? lastname=? email=?;")
+	    PanicIf(err)
+	    //err := db.Query("update users set firsname=$1 lastname=$2 email=$3;", userData.FirstName,userData.LastName,userData.Email)
+	    _, err = smt.Exec(userData.FirstName,userData.LastName,userData.Email)
+	    PanicIf(err)
+	    
+	  }
+	}
+
+	loginPage.Body = *profilePage
+	loginPage.Content = TEMPLATEDIR + "/profile/index.html"
+
+        return loginPage
 }
