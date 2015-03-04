@@ -11,7 +11,6 @@ import (
 	"code.google.com/p/go.crypto/bcrypt"
 	//"strconv"
 	_ "github.com/lib/pq"
-	//"fmt"
 )
 
 const TEMPLATEDIR string = "templates"
@@ -25,7 +24,7 @@ type User struct {
 }
 
 func SetupDB() *sql.DB {
-	db, err := sql.Open("postgres", "user=jallman password=aabbcc dbname=webstruct_user host=localhost sslmode=disable")
+	db, err := sql.Open("postgres", "user=jallman password=abc dbname=webstruct_user host=localhost sslmode=disable")
 	PanicIf(err)
 	return db
 }
@@ -77,20 +76,17 @@ func Signup(rw http.ResponseWriter, r *http.Request, db *sql.DB) {
 	http.Redirect(rw, r, "/login", http.StatusFound)
 }
 
-//func RequireLogin(rw http.ResponseWriter, req *http.Request, s sessions.Session, db *sql.DB, c martini.Context) (int, string) {
 func RequireLogin(rw http.ResponseWriter, req *http.Request, s sessions.Session, db *sql.DB, c martini.Context) {
 	user := &User{}
 	err := db.QueryRow("select uid, username from users where uid=$1", s.Get("userId")).Scan(&user.Id, &user.Name)
 
 	if err != nil {
 	 http.Redirect(rw, req, "/login", http.StatusFound)
-	 //return 401, fmt.Sprintf("a===%s===%s===",err, s.Get("userId"))
 	 return
 	}
 
 	// map the user to the context
-	c.Map(user)
-	//return 401, fmt.Sprintf("b===%s===",err)
+	c.Map(user.Id)
 }
 
 func PostLogin(rw http.ResponseWriter,w http.ResponseWriter, req *http.Request, db *sql.DB, s sessions.Session) {
@@ -109,7 +105,7 @@ func PostLogin(rw http.ResponseWriter,w http.ResponseWriter, req *http.Request, 
 	   t.Execute(w,&pageError)
 	  } else {
 	
-	  //s.Delete("userId")
+	  s.Delete("userId")
 	  s.Set("userId", id)
 	
 	  http.Redirect(rw, req, "/", http.StatusFound)
@@ -189,6 +185,7 @@ func PageMenu(id int, db *sql.DB, rw http.ResponseWriter, req *http.Request) {
           }
 	 }
 
+	// This conditional is broken!!
 	if my_groups != "" {
 	  allow_groups_inc, err := db.Query("select i.gid_inc from groupinc i,groupuser g where i.gid=g.gid and g.uid=$1;", id)
 	  PanicIf(err)
@@ -249,29 +246,6 @@ func PageMenu(id int, db *sql.DB, rw http.ResponseWriter, req *http.Request) {
 ##################################################
 */
 
-/*
-TESTING FROM HERE
-
-type InputCheckData struct {
-	Data string
-	Name string
-	Min int
-	Max int
-}
-
-func (ic *InputCheckData) InputCheck() *string {
-	var error string
-	if len(ic.Data) > ic.Max {
-	 error = "Your " + ic.Name + " is too long"
-	}
-	if len(ic.Data) < ic.Min {
-	 error = "Your " + ic.Name + " is too short"
-	}
-	return &error
-}
-*/
-
-
 type InputCheckData struct {
 	Data string
 	Name string
@@ -279,6 +253,21 @@ type InputCheckData struct {
 	Max int
 	Error *bool
 	ErrorMsg *[]string
+}
+
+type WebErrData struct {
+	IErrorMsg error
+	OError *bool
+	ErrorMsg *[]string
+}
+
+
+func (we *WebErrData) WebErr() {
+	if we.IErrorMsg != nil {
+	  myError := we.IErrorMsg.Error()
+	  *we.OError = true
+	  *we.ErrorMsg = append(*we.ErrorMsg, myError)
+	}
 }
 
 func (ic *InputCheckData) InputCheck() {
@@ -349,28 +338,26 @@ func PageProfile(scr string, id int, db *sql.DB, rw http.ResponseWriter, r *http
 	profilePage.Scr = scr
 
 	err := db.QueryRow("select firstname,lastname,username,email from users where uid=$1;", id).Scan(&profilePage.FirstName,&profilePage.LastName,&profilePage.Username,&profilePage.Email)
-	PanicIf(err)
+	 checkQuery := WebErrData{err, &loginPage.Error, &loginPage.ErrorMsg}
+	 checkQuery.WebErr()
 	
 	dataReq := r.FormValue("SUBMIT")
 	if dataReq == "Submit" {
 	  userData.FirstName,userData.LastName,userData.Email = r.FormValue("FIRST_NAME"),r.FormValue("LAST_NAME"),r.FormValue("EMAIL")
-	  //checkFirstName := InputCheckData{userData.FirstName, "First Name", 2, 32, &loginPage.Error}
 	  checkFirstName := InputCheckData{userData.FirstName, "First Name", 2, 32,&loginPage.Error,&loginPage.ErrorMsg}
 	  checkFirstName.InputCheck()
-
-
-	  //checkLastName := &InputCheckData{userData.LastName, "Last Name", 2, 32}
-	  //loginPage.Error = append(loginPage.Error, *checkLastName.InputCheck())
-	  //checkEmail := InputCheckData{userData.Email, "Email Address", 8, 64}
-	  //loginPage.Error = append(loginPage.Error, *checkEmail.InputCheck())
+	  checkLastName := &InputCheckData{userData.LastName, "Last Name", 2, 32,&loginPage.Error,&loginPage.ErrorMsg}
+	  checkLastName.InputCheck()
+	  checkEmail := InputCheckData{userData.Email, "Email Address", 8, 64,&loginPage.Error,&loginPage.ErrorMsg}
+	  checkEmail.InputCheck()
 	  
 	  if loginPage.Error == false {
-	    smt, err := db.Prepare("update users set firsname=? lastname=? email=?;")
-	    PanicIf(err)
-	    //err := db.Query("update users set firsname=$1 lastname=$2 email=$3;", userData.FirstName,userData.LastName,userData.Email)
-	    _, err = smt.Exec(userData.FirstName,userData.LastName,userData.Email)
-	    PanicIf(err)
-	    
+	    _, err := db.Exec("update users set firstname=$1, lastname=$2, email=$3 where uid=$4;",userData.FirstName,userData.LastName,userData.Email,id)
+	    checkLoginInsertData := WebErrData{err, &loginPage.Error, &loginPage.ErrorMsg}
+	    checkLoginInsertData.WebErr()
+	    err = db.QueryRow("select firstname,lastname,username,email from users where uid=$1;", id).Scan(&profilePage.FirstName,&profilePage.LastName,&profilePage.Username,&profilePage.Email)
+	    checkQuery = WebErrData{err, &loginPage.Error, &loginPage.ErrorMsg}
+	    checkQuery.WebErr()
 	  }
 	}
 
