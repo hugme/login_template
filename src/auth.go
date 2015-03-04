@@ -9,8 +9,9 @@ import (
 	//"io/ioutil"
 	//"os"
 	"code.google.com/p/go.crypto/bcrypt"
-	"strconv"
+	//"strconv"
 	_ "github.com/lib/pq"
+	//"fmt"
 )
 
 const TEMPLATEDIR string = "templates"
@@ -24,7 +25,7 @@ type User struct {
 }
 
 func SetupDB() *sql.DB {
-	db, err := sql.Open("postgres", "user=jallman password=abc dbname=webstruct_user host=localhost sslmode=disable")
+	db, err := sql.Open("postgres", "user=jallman password=aabbcc dbname=webstruct_user host=localhost sslmode=disable")
 	PanicIf(err)
 	return db
 }
@@ -50,42 +51,46 @@ func main() {
 	 http.Redirect(rw, r, "/login", http.StatusFound)
 	})
 
-	m.Get("/login", PostLogin)
-	m.Post("/login", PostLogin)
 	m.Post("/signup", Signup)
 
 	m.Get("/", RequireLogin, PageLayout)
+	//m.Get("/", PageLayout)
 	m.Post("/", RequireLogin, PageLayout)
 	m.Get("/go", RequireLogin, PageLayout)
 	m.Post("/go", RequireLogin, PageLayout)
+
+	m.Get("/login", PostLogin)
+	m.Post("/login", PostLogin)
 
 
 	m.Run()
 }
 
 func Signup(rw http.ResponseWriter, r *http.Request, db *sql.DB) {
-	username, email, password := r.FormValue("username"), r.FormValue("email"), r.FormValue("password")
+	username, email, password, firstname, lastname := r.FormValue("username"), r.FormValue("email"), r.FormValue("password"), r.FormValue("firstname"), r.FormValue("lastname")
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	PanicIf(err)
-	_, err = db.Exec("insert into users (username,email,pass) values ($1, $2, $3)", username, email, hashedPassword)
+	_, err = db.Exec("insert into users (username,firstname,lastname,email,pass) values ($1, $2, $3, $4, $5)", username, firstname, lastname, email, hashedPassword)
 	PanicIf(err)
 
 	// redirect to login screen
 	http.Redirect(rw, r, "/login", http.StatusFound)
 }
 
+//func RequireLogin(rw http.ResponseWriter, req *http.Request, s sessions.Session, db *sql.DB, c martini.Context) (int, string) {
 func RequireLogin(rw http.ResponseWriter, req *http.Request, s sessions.Session, db *sql.DB, c martini.Context) {
 	user := &User{}
 	err := db.QueryRow("select uid, username from users where uid=$1", s.Get("userId")).Scan(&user.Id, &user.Name)
 
 	if err != nil {
 	 http.Redirect(rw, req, "/login", http.StatusFound)
+	 //return 401, fmt.Sprintf("a===%s===%s===",err, s.Get("userId"))
 	 return
 	}
 
 	// map the user to the context
 	c.Map(user)
-
+	//return 401, fmt.Sprintf("b===%s===",err)
 }
 
 func PostLogin(rw http.ResponseWriter,w http.ResponseWriter, req *http.Request, db *sql.DB, s sessions.Session) {
@@ -104,7 +109,7 @@ func PostLogin(rw http.ResponseWriter,w http.ResponseWriter, req *http.Request, 
 	   t.Execute(w,&pageError)
 	  } else {
 	
-	  s.Delete("userId")
+	  //s.Delete("userId")
 	  s.Set("userId", id)
 	
 	  http.Redirect(rw, req, "/", http.StatusFound)
@@ -156,6 +161,7 @@ func PageLayout(w http.ResponseWriter, r *http.Request, s sessions.Session, db *
             t, _ := template.ParseFiles(LAYOUTPAGE, wholePage.Content)
             t.Execute(w,wholePage)
 	}
+
 
 }
 
@@ -271,8 +277,10 @@ type InputCheckData struct {
 	Name string
 	Min int
 	Max int
-	Error *[]string
+	Error *bool
+	ErrorMsg *[]string
 }
+
 func (ic *InputCheckData) InputCheck() {
 	var error string
 	if len(ic.Data) > ic.Max {
@@ -281,7 +289,10 @@ func (ic *InputCheckData) InputCheck() {
 	if len(ic.Data) < ic.Min {
 	 error = "Your " + ic.Name + " is too short"
 	}
-	  *ic.Error = append(*ic.Error, error)
+	*ic.ErrorMsg = append(*ic.ErrorMsg, error)
+	if error != "" {
+	  *ic.Error = true
+	}
 	return
 }
 
@@ -327,7 +338,8 @@ type LoginPage struct {
 	Menu []Menu
 	Body ProfilePage
 	Content string
-	Error []string
+	Error bool
+	ErrorMsg []string
 }
 
 func PageProfile(scr string, id int, db *sql.DB, rw http.ResponseWriter, r *http.Request, w http.ResponseWriter) *LoginPage {
@@ -342,12 +354,9 @@ func PageProfile(scr string, id int, db *sql.DB, rw http.ResponseWriter, r *http
 	dataReq := r.FormValue("SUBMIT")
 	if dataReq == "Submit" {
 	  userData.FirstName,userData.LastName,userData.Email = r.FormValue("FIRST_NAME"),r.FormValue("LAST_NAME"),r.FormValue("EMAIL")
-	  // checkFirstName := InputCheckData{userData.FirstName, "First Name", 2, 32, &loginPage.Error}
-	  InputCheckData{userData.FirstName, "First Name", 2, 32, &loginPage.Error}
-
-	  //if *checkFirstName.InputCheck() != "" {
-	  //loginPage.Error = append(loginPage.Error, *checkFirstName.InputCheck())
-	  //}
+	  //checkFirstName := InputCheckData{userData.FirstName, "First Name", 2, 32, &loginPage.Error}
+	  checkFirstName := InputCheckData{userData.FirstName, "First Name", 2, 32,&loginPage.Error,&loginPage.ErrorMsg}
+	  checkFirstName.InputCheck()
 
 
 	  //checkLastName := &InputCheckData{userData.LastName, "Last Name", 2, 32}
@@ -355,8 +364,7 @@ func PageProfile(scr string, id int, db *sql.DB, rw http.ResponseWriter, r *http
 	  //checkEmail := InputCheckData{userData.Email, "Email Address", 8, 64}
 	  //loginPage.Error = append(loginPage.Error, *checkEmail.InputCheck())
 	  
-	    loginPage.Error = append(loginPage.Error, strconv.Itoa(len(loginPage.Error)))
-	  if len(loginPage.Error) == 0 {
+	  if loginPage.Error == false {
 	    smt, err := db.Prepare("update users set firsname=? lastname=? email=?;")
 	    PanicIf(err)
 	    //err := db.Query("update users set firsname=$1 lastname=$2 email=$3;", userData.FirstName,userData.LastName,userData.Email)

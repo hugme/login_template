@@ -30,7 +30,7 @@
   <div class=content>
 
   <!-- Any Errors -->
-	{{ range .Error }}{{ if . }}{{ . }}<br>{{ end }} {{ end }}
+	{{ range .ErrorMsg }}{{ if . }}{{ . }}<br>{{ end }} {{ end }}
   <!-- Content Body -->
 	{{ template "index.html" .Body }}
 
