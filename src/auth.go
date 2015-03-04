@@ -198,7 +198,7 @@ func PageMenu(id int, db *sql.DB, rw http.ResponseWriter, req *http.Request) {
 	    my_groups = my_groups + " OR gid='" + gid_inc  + "'"
 	  }
 	} else {
-	  http.Redirect(rw, req, "/logout", http.StatusFound)
+	  my_groups = "gid='1'"
 	}
 
 	// Now that we have the groups we can retreive the user permissions
